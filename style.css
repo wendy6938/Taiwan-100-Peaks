@@ -275,3 +275,6 @@ h1 .seal{font-size:13px;line-height:1.05;letter-spacing:0;writing-mode:vertical-
 .acctCol input,.acctCol button{width:100%;flex:none}
 .sheet form#cheerForm{flex-direction:row;flex-wrap:wrap;align-items:center}
 .sheet form#cheerForm input{flex:1 1 160px;width:auto}
+.newCheer{display:flex;gap:10px;align-items:baseline;text-align:left;width:100%;background:var(--bg);border:0;border-radius:12px;padding:10px 12px;font:inherit;color:inherit;cursor:pointer}
+.newCheer b{font-weight:400;color:var(--summit);white-space:nowrap}
+.newCheer:hover{background:var(--summit-soft)}

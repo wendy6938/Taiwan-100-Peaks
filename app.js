@@ -86,8 +86,10 @@ function render(){
   $("sum").textContent = done.reduce((s,p)=>s+p.h,0).toLocaleString()+" m";
   $("bcount").textContent = bs.filter(b=>b.ok).length+" / "+bs.length;
   const n = done.length;
-  $("say").innerHTML = `<div class="bearMini">${BEAR(n?"happy":"sleep")}</div><div class="bubble">${
+  const fresh = isMine() ? newCheers() : [];
+  $("say").innerHTML = `<div class="bearMini">${BEAR(fresh.length?"wow":n?"happy":"sleep")}</div><div class="bubble">${
     !isMine() ? `這是 ${esc(label(viewId))} 的登頂簿，點爬過的山可以幫他打氣！`
+    : fresh.length ? `你收到 ${fresh.length} 個新的打氣！<br><button class="mark save" type="button" id="seeCheers" style="margin-top:6px">♥ 看看是誰</button>`
     : (!myNick && signedIn) ? `還沒取名字喔！取個名字，山友才認得你。<br><button class="mark save" type="button" id="sayName" style="margin-top:6px">✎ 設定名字</button>`
     : n===0 ? "還沒有登頂紀錄，第一座想爬哪裡呢？點小山開始記錄吧。"
     : n<10 ? `已經 ${n} 座了！再 ${10-n} 座就能拿到「十座達成」徽章。`
@@ -206,7 +208,7 @@ document.addEventListener("keydown",e=>{ if(e.key==="Escape"){ if(!$("party").hi
 $("sheet").addEventListener("click",e=>{
   const b=e.target.closest("button[data-act]"); if(!b) return;
   const p=PEAKS[sheetPeak-1], a=b.dataset.act;
-  if(a==="close") closeSheet();
+  if(a==="close"){ closeSheet(); return; }
   if(a==="edit"){ editing=true; renderSheet(); }
   if(a==="unsummit"){ delete mine[p.name]; editing=false; render(); renderSheet(); save(); }
   if(a==="like"){ const k=viewId+"~"+p.rank, c={...(myCheers[k]||{})}; c.l=!c.l; c.t=Date.now(); setCheer(k,c); }
@@ -223,6 +225,27 @@ $("sheet").addEventListener("submit",e=>{
   if(e.target.id==="cheerForm"){ const k=viewId+"~"+p.rank, c={...(myCheers[k]||{})}; c.m=$("cMsg").value.trim().slice(0,40); c.t=Date.now(); setCheer(k,c); }
 });
 function setCheer(k,c){ if(!c.l && !c.m) delete myCheers[k]; else myCheers[k]=c; cheers[myId]=myCheers; render(); renderSheet(); saveCheers(); }
+
+// ---------- new cheers ----------
+const SEEN="baiyue-cheers-seen";
+const seenAt=()=>{ try{ return +localStorage.getItem(SEEN)||0; }catch(e){ return 0; } };
+function newCheers(){ if(!myId) return []; const t0=seenAt(); return cheersFor(myId).filter(c=>(c.t||0)>t0 && (c.l||c.m)).sort((a,b)=>(b.t||0)-(a.t||0)); }
+function openCheersSheet(){
+  const list=newCheers(); if(!list.length) return;
+  sheetPeak=null;
+  $("sheet").innerHTML=`<h3 id="sheetTitle">新的打氣 ♥</h3>
+    <div class="cheers">${list.map(c=>{ const p=PEAKS[c.rank-1];
+      return `<button class="newCheer" type="button" data-go="${c.rank}"><b>${esc(label(c.from))}</b>
+        <span>${c.l?'<span class="hearts">♥</span> ':""}${esc(p?p.name:"")}${c.m?`：${esc(c.m)}`:" 按了讚"}</span></button>`; }).join("")}</div>
+    <div class="btns" style="justify-content:flex-end"><button class="mark del" data-act="close">關閉</button></div>`;
+  $("scrim").hidden=false;
+  try{ localStorage.setItem(SEEN, String(Math.max(...list.map(c=>c.t||0)))); }catch(e){}
+  render();
+}
+document.addEventListener("click",e=>{
+  if(e.target.closest("#seeCheers")){ openCheersSheet(); return; }
+  const g=e.target.closest("[data-go]"); if(g){ openSheet(+g.dataset.go); }
+});
 
 // ---------- celebration ----------
 let petalRun=null;
