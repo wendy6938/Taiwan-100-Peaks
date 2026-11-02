@@ -285,45 +285,69 @@ const setSync=t=>{ $("sync").textContent=t; };
 mine=clean(lsRead()); myNick=cleanNick(lsNick()); render(); setSync("載入中…");
 function localMode(msg){ signedIn=false; save=async()=>lsWrite(); render(); renderAccount(); setSync(msg||"紀錄存在這台裝置"); }
 
-let sb=null, account=null, loginEmail="";   // account: {email, anon}
+let sb=null, account=null, recovering=false, linkSent="";   // account: {email, anon}
+const pwInput=(id,ph)=>`<input type="password" id="${id}" required minlength="6" autocomplete="${id==="loginPw"?"current-password":"new-password"}" placeholder="${ph}" aria-label="${ph}">`;
 function renderAccount(){
   const box=$("account"); if(!box) return;
   if(!sb){ box.innerHTML=`<div class="note">這個 app 還沒連上雲端資料庫，紀錄只存在這台裝置。</div>`; return; }
-  box.innerHTML = (!account || account.anon) ? `
-    ${account ? `<div class="acctTxt"><b>免註冊使用中</b><br>紀錄已同步到雲端，但只認得這台裝置。綁定 Email 之後，換手機或電腦也找得回來。</div>
-    <form class="acctForm" id="linkForm"><input type="email" id="linkEmail" required placeholder="you@example.com" aria-label="Email"><button class="mark" type="submit">綁定 Email</button></form>`
+  const loginBlock = `<details class="acctMore"><summary>已經綁定過 Email？用 Email 和密碼登入</summary>
+      <form class="acctForm acctCol" id="loginForm"><input type="email" id="loginEmail" required autocomplete="email" placeholder="綁定的 Email" aria-label="Email">${pwInput("loginPw","密碼")}<button class="mark save" type="submit">登入</button></form>
+      <div class="btns"><button class="mark del" type="button" id="forgotBtn">忘記密碼／還沒設定密碼</button></div>
+      <div class="hint">登入後，這台裝置目前的紀錄會合併到那個帳號。</div></details>`;
+  if(recovering){
+    box.innerHTML=`<div class="acctTxt"><b>設定新密碼</b><br>帳號：${esc(account?.email||"")}</div>
+      <form class="acctForm acctCol" id="newPwForm">${pwInput("newPw","新密碼（至少 6 個字）")}<button class="mark save" type="submit">儲存密碼</button></form>
+      <div class="hint" id="acctMsg"></div>`; return;
+  }
+  if(account && !account.anon){
+    box.innerHTML=`<div class="acctTxt"><b>已綁定</b> ${esc(account.email||"")}<br>在其他手機或電腦打開 app，用這個 Email 和密碼登入，就會看到同一份紀錄。</div>
+      <details class="acctMore"><summary>設定／更改密碼</summary>
+        <form class="acctForm acctCol" id="newPwForm">${pwInput("newPw","新密碼（至少 6 個字）")}<button class="mark" type="submit">儲存密碼</button></form></details>
+      <div class="btns"><button class="mark del" type="button" id="logoutBtn">登出這台裝置</button></div><div class="hint" id="acctMsg"></div>`; return;
+  }
+  box.innerHTML = `
+    ${account ? (linkSent ? `<div class="acctTxt"><b>確認信已寄到</b> ${esc(linkSent)}<br>請打開信、點確認連結（在 Safari 打開也沒關係），再回到這裡按下面的按鈕。</div>
+        <div class="btns"><button class="mark save" type="button" id="linkDone">我已經點了確認連結</button><button class="mark del" type="button" id="linkRestart">換一個 Email</button></div>`
+      : `<div class="acctTxt"><b>免註冊使用中</b><br>紀錄已同步到雲端，但只認得這台裝置。綁定 Email 之後，換手機或電腦也找得回來。</div>
+        <form class="acctForm" id="linkForm"><input type="email" id="linkEmail" required autocomplete="email" placeholder="you@example.com" aria-label="Email"><button class="mark" type="submit">綁定 Email</button></form>`)
     : `<div class="acctTxt">不用註冊，取名字或標記第一座山時，就會自動建立你的登頂簿。</div>`}
-    <details class="acctMore"${loginEmail?" open":""}><summary>已經綁定過 Email？用 Email 登入找回紀錄</summary>
-      ${!loginEmail ? `<form class="acctForm" id="loginForm"><input type="email" id="loginEmail" required placeholder="輸入綁定過的 Email" aria-label="Email"><button class="mark" type="submit">寄登入碼</button></form>`
-      : `<div class="hint">登入碼已寄到 ${esc(loginEmail)}，請打開信，把信裡的數字登入碼輸入在下面。</div>
-         <form class="acctForm" id="codeForm"><input type="text" id="loginCode" required inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6,10}" maxlength="10" placeholder="登入碼" aria-label="登入碼"><button class="mark save" type="submit">登入</button></form>
-         <div class="btns"><button class="mark del" type="button" id="loginRestart">換一個 Email／重寄</button></div>`}
-      <div class="hint">登入後，這台裝置目前的紀錄會合併到那個帳號。</div></details>
-    <div class="hint" id="acctMsg"></div>`
-  : `<div class="acctTxt"><b>已綁定</b> ${esc(account.email||"")}<br>在任何裝置用這個 Email 登入，都會看到同一份紀錄。</div>
-    <div class="btns"><button class="mark del" type="button" id="logoutBtn">登出這台裝置</button></div><div class="hint" id="acctMsg"></div>`;
+    ${loginBlock}
+    <div class="hint" id="acctMsg"></div>`;
 }
+const msg=t=>{ const m=$("acctMsg"); if(m) m.textContent=t; };
 document.addEventListener("submit", async e=>{
   if(!sb) return;
   const redirect = location.origin+location.pathname;
   if(e.target.id==="linkForm"){ e.preventDefault(); const email=$("linkEmail").value.trim();
     const {error}=await sb.auth.updateUser({email},{emailRedirectTo:redirect});
-    $("acctMsg").textContent = error ? "綁定失敗："+error.message : "已寄出確認信，請到信箱點連結完成綁定。"; }
-  if(e.target.id==="loginForm"){ e.preventDefault(); const email=$("loginEmail").value.trim();
-    const {error}=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:false,emailRedirectTo:redirect}});
-    if(error){ $("acctMsg").textContent = /not.*found|signups? not allowed/i.test(error.message) ? "找不到這個 Email，請確認是當初綁定的那個。" : "寄送失敗："+error.message; return; }
-    loginEmail=email; renderAccount(); setTimeout(()=>$("loginCode")?.focus(),50); }
-  if(e.target.id==="codeForm"){ e.preventDefault(); const token=$("loginCode").value.replace(/\D/g,"");
-    $("acctMsg").textContent="登入中…";
+    if(error){ msg(/already|registered|exists/i.test(error.message)?"這個 Email 已經綁定過了，請改用下面的「用 Email 和密碼登入」。":"綁定失敗："+error.message); return; }
+    linkSent=email; renderAccount(); }
+  if(e.target.id==="newPwForm"){ e.preventDefault(); const password=$("newPw").value;
+    const {error}=await sb.auth.updateUser({password});
+    if(error){ msg("密碼設定失敗："+error.message); return; }
+    recovering=false; renderAccount(); msg("密碼已儲存！在其他裝置用 Email 和這組密碼登入就好。"); }
+  if(e.target.id==="loginForm"){ e.preventDefault(); const email=$("loginEmail").value.trim(), password=$("loginPw").value;
+    msg("登入中…");
     // remove this device's anonymous duplicate first; its records stay on this device and merge into the account after login
     const wasAnon = account?.anon, oldId = myId;
     if(wasAnon && oldId){ await sb.from("cheers").delete().eq("author",oldId); await sb.from("profiles").delete().eq("id",oldId); }
-    const {error}=await sb.auth.verifyOtp({email:loginEmail,token,type:"email"});
+    const {error}=await sb.auth.signInWithPassword({email,password});
     if(error){ if(wasAnon && oldId && (Object.keys(mine).length||myNick)) await sb.from("profiles").upsert({id:oldId,nick:myNick,peaks:mine,updated_at:new Date().toISOString()});
-      $("acctMsg").textContent="登入碼不對或已過期，請再試一次或重寄。"; return; }
-    $("acctMsg").textContent="登入成功，正在載入你的紀錄…"; setTimeout(()=>location.reload(),300); }
+      msg(/invalid/i.test(error.message)?"Email 或密碼不對。還沒設定過密碼的話，請按「忘記密碼／還沒設定密碼」。":"登入失敗："+error.message); return; }
+    msg("登入成功，正在載入你的紀錄…"); setTimeout(()=>location.reload(),300); }
 });
-document.addEventListener("click", async e=>{ if(e.target.id==="loginRestart"){ loginEmail=""; renderAccount(); return; } if(e.target.id==="logoutBtn" && sb){ await sb.auth.signOut(); try{ localStorage.removeItem(LS); localStorage.removeItem(LS+"-nick"); }catch(_){} location.reload(); } });
+document.addEventListener("click", async e=>{
+  if(!sb) return;
+  if(e.target.id==="linkRestart"){ linkSent=""; renderAccount(); return; }
+  if(e.target.id==="linkDone"){ const {data,error}=await sb.auth.refreshSession();
+    const u=data?.user; if(!error && u && u.email && !u.is_anonymous){ account={email:u.email,anon:false}; linkSent=""; renderAccount(); msg("綁定完成！請在上面「設定／更改密碼」設一組密碼，換裝置時用來登入。"); const d=document.querySelector("#account details"); if(d) d.open=true; }
+    else msg("還沒確認成功，請再點一次信裡的連結，或稍等一下再按。"); return; }
+  if(e.target.id==="forgotBtn"){ const email=$("loginEmail")?.value.trim();
+    if(!email){ msg("請先在上面輸入 Email，再按這個按鈕。"); $("loginEmail")?.focus(); return; }
+    const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});
+    msg(error?"寄送失敗："+error.message+"（免費方案每小時只能寄幾封，請稍後再試）":"已寄出設定密碼的信。請點信裡的連結（會在瀏覽器打開），設定好密碼後，回到 app 用 Email 和密碼登入。"); return; }
+  if(e.target.id==="logoutBtn"){ await sb.auth.signOut(); try{ localStorage.removeItem(LS); localStorage.removeItem(LS+"-nick"); }catch(_){} location.reload(); }
+});
 
 (async()=>{
   const cfg=window.BAIYUE_CONFIG||{};
@@ -333,7 +357,11 @@ document.addEventListener("click", async e=>{ if(e.target.id==="loginRestart"){ 
     let {data:{session}}=await sb.auth.getSession();
     signedIn=true;
     if(session){ const u=session.user; myId=u.id; account={email:u.email, anon:!!u.is_anonymous}; }
-    sb.auth.onAuthStateChange((ev,s)=>{ if(s?.user && myId && s.user.id!==myId) location.reload(); else if(s?.user){ account={email:s.user.email,anon:!!s.user.is_anonymous}; renderAccount(); } });
+    sb.auth.onAuthStateChange((ev,s)=>{
+      if(ev==="PASSWORD_RECOVERY"){ recovering=true; if(s?.user){ myId=s.user.id; account={email:s.user.email,anon:false}; } renderAccount(); setTab("home"); setTimeout(()=>$("account")?.scrollIntoView({block:"center"}),100); return; }
+      if(s?.user && myId && s.user.id!==myId && !recovering) location.reload();
+      else if(s?.user){ account={email:s.user.email,anon:!!s.user.is_anonymous}; renderAccount(); } });
+    if(session){ sb.auth.getUser().then(({data})=>{ const u=data?.user; if(u && u.id===myId){ account={email:u.email,anon:!!u.is_anonymous}; renderAccount(); } }); }
     renderAccount();
     // create the (anonymous) user only when this person first saves something
     let ensuring=null;
