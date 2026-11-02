@@ -1,6 +1,6 @@
 {
-  "name": "台灣百岳登頂簿",
-  "short_name": "百岳登頂簿",
+  "name": "Taiwan 100-Peaks",
+  "short_name": "Taiwan 100-Peaks",
   "description": "記錄台灣百岳完登進度，和山友互相打氣。",
   "lang": "zh-Hant-TW",
   "start_url": "./",
@@ -9,8 +9,21 @@
   "background_color": "#fbf3e6",
   "theme_color": "#fbe3cf",
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
-    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ]
 }
