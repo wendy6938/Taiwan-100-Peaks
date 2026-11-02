@@ -88,6 +88,7 @@ function render(){
   const n = done.length;
   $("say").innerHTML = `<div class="bearMini">${BEAR(n?"happy":"sleep")}</div><div class="bubble">${
     !isMine() ? `這是 ${esc(label(viewId))} 的登頂簿，點爬過的山可以幫他打氣！`
+    : (!myNick && signedIn) ? `還沒取名字喔！取個名字，山友才認得你。<br><button class="mark save" type="button" id="sayName" style="margin-top:6px">✎ 設定名字</button>`
     : n===0 ? "還沒有登頂紀錄，第一座想爬哪裡呢？點小山開始記錄吧。"
     : n<10 ? `已經 ${n} 座了！再 ${10-n} 座就能拿到「十座達成」徽章。`
     : n<100 ? `${n} 座！離百岳完登還有 ${100-n} 座，慢慢來，安全第一。`
@@ -265,6 +266,7 @@ document.addEventListener("click", e=>{
   if(t.id==="back"){ viewId=null; render(); }
 });
 $("q").addEventListener("input",e=>{ q=e.target.value.trim(); renderAcc(); });
+document.addEventListener("click",e=>{ if(e.target.id==="sayName"){ window.scrollTo({top:0,behavior:"smooth"}); $("nameBtn").click(); } });
 $("nameBtn").addEventListener("click",()=>{ $("nameForm").hidden=false; $("nameBtn").hidden=true; $("nameInput").value=myNick; $("nameInput").focus(); });
 $("nameCancel").addEventListener("click",()=>{ $("nameForm").hidden=true; render(); });
 $("nameForm").addEventListener("submit",e=>{ e.preventDefault(); myNick=cleanNick($("nameInput").value); $("nameForm").hidden=true; render(); save(); });
