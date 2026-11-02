@@ -111,11 +111,11 @@ function renderFriends(){
   const meId = ME();
   sec.hidden=false;
   let list=[{id:meId,r:mine}].concat(ids.map(id=>({id,r:others[id]}))).map(x=>({...x,n:Object.keys(x.r).length})).sort((a,b)=>b.n-a.n);
-  const total=list.length; if(!showAllFriends && total>6){ const meRow=list.find(x=>x.id===meId); list=list.slice(0,6); if(!list.includes(meRow)) list[5]=meRow; }
+  const total=list.length; if(!showAllFriends && total>5){ const meRow=list.find(x=>x.id===meId); list=list.slice(0,5); if(!list.includes(meRow)) list[4]=meRow; }
   $("friends").innerHTML = list.map((x,i)=>`<button class="reg friend" data-u="${esc(x.id)}" aria-pressed="${bookOwner()===x.id}">
     <div class="top"><span>${i<3&&x.n?`<span class="rankDot">${i+1}</span>`:""}${esc(label(x.id))}${x.id===meId&&myNick?"（我）":""}</span><span class="num">${x.n}/100</span></div>
     <div class="bar"><i style="width:${x.n}%"></i></div></button>`).join("")
-    + (total>6?`<button class="mark moreBtn" id="moreFriends">${showAllFriends?"收起":"看全部 "+total+" 位山友"}</button>`:"")
+    + (total>5?`<button class="mark moreBtn" id="moreFriends">${showAllFriends?"收起":"看全部 "+total+" 位山友"}</button>`:"")
     + (ids.length?"":`<div class="note" style="grid-column:1/-1">把網址傳給山友，他們打開就能開始記錄（不用註冊），會出現在這裡。</div>`);
 }
 
