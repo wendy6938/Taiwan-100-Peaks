@@ -106,7 +106,7 @@ function render(){
 function renderFriends(){
   const sec=$("friendsSec");
   if(!signedIn){ sec.hidden=false; $("friends").innerHTML=`<div class="note">這個 app 還沒連上雲端，紀錄只存在這台裝置，山友看不到。</div>`; return; }
-  const ids = Object.keys(others).filter(id=>id!==myId);
+  const ids = Object.keys(others).filter(id=>id!==myId && (Object.keys(others[id]).length || nicks[id]));
   sec.hidden=false;
   const list=[{id:myId,r:mine}].concat(ids.map(id=>({id,r:others[id]}))).map(x=>({...x,n:Object.keys(x.r).length})).sort((a,b)=>b.n-a.n);
   $("friends").innerHTML = list.map((x,i)=>`<button class="reg friend" data-u="${esc(x.id)}" aria-pressed="${bookOwner()===x.id}">
@@ -280,7 +280,7 @@ const setSync=t=>{ $("sync").textContent=t; };
 mine=clean(lsRead()); myNick=cleanNick(lsNick()); render(); setSync("載入中…");
 function localMode(msg){ signedIn=false; save=async()=>lsWrite(); render(); renderAccount(); setSync(msg||"紀錄存在這台裝置"); }
 
-let sb=null, account=null;   // account: {email, anon}
+let sb=null, account=null, loginEmail="";   // account: {email, anon}
 function renderAccount(){
   const box=$("account"); if(!box) return;
   if(!sb){ box.innerHTML=`<div class="note">這個 app 還沒連上雲端資料庫，紀錄只存在這台裝置。</div>`; return; }
@@ -288,8 +288,11 @@ function renderAccount(){
   box.innerHTML = account.anon ? `
     <div class="acctTxt"><b>免註冊使用中</b><br>紀錄已同步到雲端，但只認得這台裝置。綁定 Email 之後，換手機或清除瀏覽器資料也找得回來。</div>
     <form class="acctForm" id="linkForm"><input type="email" id="linkEmail" required placeholder="you@example.com" aria-label="Email"><button class="mark" type="submit">綁定 Email</button></form>
-    <details class="acctMore"><summary>已經在別的裝置綁定過？</summary>
-      <form class="acctForm" id="loginForm"><input type="email" id="loginEmail" required placeholder="輸入綁定過的 Email" aria-label="Email"><button class="mark" type="submit">寄登入連結</button></form>
+    <details class="acctMore"${loginEmail?" open":""}><summary>已經綁定過 Email？用 Email 登入找回紀錄</summary>
+      ${!loginEmail ? `<form class="acctForm" id="loginForm"><input type="email" id="loginEmail" required placeholder="輸入綁定過的 Email" aria-label="Email"><button class="mark" type="submit">寄登入碼</button></form>`
+      : `<div class="hint">登入碼已寄到 ${esc(loginEmail)}，請打開信，把信裡的數字登入碼輸入在下面。</div>
+         <form class="acctForm" id="codeForm"><input type="text" id="loginCode" required inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6,10}" maxlength="10" placeholder="登入碼" aria-label="登入碼"><button class="mark save" type="submit">登入</button></form>
+         <div class="btns"><button class="mark del" type="button" id="loginRestart">換一個 Email／重寄</button></div>`}
       <div class="hint">登入後，這台裝置目前的紀錄會合併到那個帳號。</div></details>
     <div class="hint" id="acctMsg"></div>`
   : `<div class="acctTxt"><b>已綁定</b> ${esc(account.email||"")}<br>在任何裝置用這個 Email 登入，都會看到同一份紀錄。</div>
@@ -303,9 +306,14 @@ document.addEventListener("submit", async e=>{
     $("acctMsg").textContent = error ? "綁定失敗："+error.message : "已寄出確認信，請到信箱點連結完成綁定。"; }
   if(e.target.id==="loginForm"){ e.preventDefault(); const email=$("loginEmail").value.trim();
     const {error}=await sb.auth.signInWithOtp({email,options:{shouldCreateUser:false,emailRedirectTo:redirect}});
-    $("acctMsg").textContent = error ? "寄送失敗："+error.message : "已寄出登入連結，請用這台裝置打開信裡的連結。"; }
+    if(error){ $("acctMsg").textContent = /not.*found|signups? not allowed/i.test(error.message) ? "找不到這個 Email，請確認是當初綁定的那個。" : "寄送失敗："+error.message; return; }
+    loginEmail=email; renderAccount(); setTimeout(()=>$("loginCode")?.focus(),50); }
+  if(e.target.id==="codeForm"){ e.preventDefault(); const token=$("loginCode").value.replace(/\D/g,"");
+    $("acctMsg").textContent="登入中…";
+    const {error}=await sb.auth.verifyOtp({email:loginEmail,token,type:"email"});
+    $("acctMsg").textContent = error ? "登入碼不對或已過期，請再試一次或重寄。" : "登入成功，正在載入你的紀錄…"; }
 });
-document.addEventListener("click", async e=>{ if(e.target.id==="logoutBtn" && sb){ await sb.auth.signOut(); try{ localStorage.removeItem(LS); localStorage.removeItem(LS+"-nick"); }catch(_){} location.reload(); } });
+document.addEventListener("click", async e=>{ if(e.target.id==="loginRestart"){ loginEmail=""; renderAccount(); return; } if(e.target.id==="logoutBtn" && sb){ await sb.auth.signOut(); try{ localStorage.removeItem(LS); localStorage.removeItem(LS+"-nick"); }catch(_){} location.reload(); } });
 
 (async()=>{
   const cfg=window.BAIYUE_CONFIG||{};
@@ -352,7 +360,7 @@ document.addEventListener("click", async e=>{ if(e.target.id==="logoutBtn" && sb
         const had=map[myId];
         mine=Object.assign({},mine,had||{});
         const localNick=myNick; if(nk[myId]) myNick=nk[myId]; lsWrite();
-        if(!had || Object.keys(mine).length!==Object.keys(had).length || (!nk[myId]&&localNick)) await push();
+        if(had ? (Object.keys(mine).length!==Object.keys(had).length || (!nk[myId]&&localNick)) : (Object.keys(mine).length||myNick)) await push();
         else setSync("已同步・山友看得到你的進度");
       } else if(!busy && map[myId]){ mine=map[myId]; myNick=nk[myId]||""; lsWrite(); }
       myCheers=all[myId]||{}; syncedCheers=JSON.parse(JSON.stringify(myCheers));
