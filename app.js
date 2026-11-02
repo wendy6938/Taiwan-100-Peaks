@@ -310,8 +310,13 @@ document.addEventListener("submit", async e=>{
     loginEmail=email; renderAccount(); setTimeout(()=>$("loginCode")?.focus(),50); }
   if(e.target.id==="codeForm"){ e.preventDefault(); const token=$("loginCode").value.replace(/\D/g,"");
     $("acctMsg").textContent="登入中…";
+    // remove this device's anonymous duplicate first; its records stay on this device and merge into the account after login
+    const wasAnon = account?.anon, oldId = myId;
+    if(wasAnon && oldId){ await sb.from("cheers").delete().eq("author",oldId); await sb.from("profiles").delete().eq("id",oldId); }
     const {error}=await sb.auth.verifyOtp({email:loginEmail,token,type:"email"});
-    $("acctMsg").textContent = error ? "登入碼不對或已過期，請再試一次或重寄。" : "登入成功，正在載入你的紀錄…"; }
+    if(error){ if(wasAnon && oldId && (Object.keys(mine).length||myNick)) await sb.from("profiles").upsert({id:oldId,nick:myNick,peaks:mine,updated_at:new Date().toISOString()});
+      $("acctMsg").textContent="登入碼不對或已過期，請再試一次或重寄。"; return; }
+    $("acctMsg").textContent="登入成功，正在載入你的紀錄…"; }
 });
 document.addEventListener("click", async e=>{ if(e.target.id==="loginRestart"){ loginEmail=""; renderAccount(); return; } if(e.target.id==="logoutBtn" && sb){ await sb.auth.signOut(); try{ localStorage.removeItem(LS); localStorage.removeItem(LS+"-nick"); }catch(_){} location.reload(); } });
 
