@@ -395,4 +395,10 @@ document.addEventListener("click", async e=>{ if(e.target.id==="loginRestart"){ 
 })();
 
 // ---------- offline / install ----------
-if("serviceWorker" in navigator && location.protocol==="https:") navigator.serviceWorker.register("sw.js").catch(()=>{});
+if("serviceWorker" in navigator && location.protocol==="https:"){
+  const hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.register("sw.js").then(r=>r.update()).catch(()=>{});
+  // a new version took over: reload once so the page runs the new files
+  let reloaded=false;
+  navigator.serviceWorker.addEventListener("controllerchange",()=>{ if(hadController && !reloaded){ reloaded=true; location.reload(); } });
+}
