@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>台灣百岳登頂簿</title>
+<meta name="description" content="記錄台灣百岳完登進度，和山友互相打氣。">
+<meta name="theme-color" content="#fbe3cf">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="百岳登頂簿">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+
+<div class="wrap">
+  <header class="masthead">
+    <div class="sky" aria-hidden="true">
+      <svg class="sun" viewBox="0 0 100 100"><g class="rays" stroke="var(--hd-sun)" stroke-width="5" stroke-linecap="round" opacity=".6"><path d="M50 3v10M50 87v10M3 50h10M87 50h10M17 17l7 7M76 76l7 7M17 83l7-7M76 24l7-7"/></g><circle cx="50" cy="50" r="28" fill="var(--hd-sun)"/><circle cx="41" cy="47" r="3" fill="var(--hd-ink)"/><circle cx="59" cy="47" r="3" fill="var(--hd-ink)"/><path d="M44 55 Q50 61 56 55" stroke="var(--hd-ink)" stroke-width="2.6" fill="none" stroke-linecap="round"/><ellipse cx="35" cy="56" rx="5" ry="3" fill="#f6b8a0"/><ellipse cx="65" cy="56" rx="5" ry="3" fill="#f6b8a0"/></svg>
+      <svg class="cloud c1" viewBox="0 0 120 60"><path d="M22 52 Q4 52 6 38 Q8 26 24 28 Q26 10 46 12 Q60 2 74 14 Q94 8 98 28 Q116 30 112 44 Q110 52 96 52Z" fill="var(--hd-line)"/><circle cx="50" cy="36" r="2.6" fill="var(--hd-ink)"/><circle cx="68" cy="36" r="2.6" fill="var(--hd-ink)"/><path d="M55 41 Q59 45 63 41" stroke="var(--hd-ink)" stroke-width="2" fill="none" stroke-linecap="round"/><ellipse cx="44" cy="42" rx="4" ry="2.4" fill="#f6c1b5"/><ellipse cx="74" cy="42" rx="4" ry="2.4" fill="#f6c1b5"/></svg>
+      <svg class="cloud c2" viewBox="0 0 120 60"><path d="M22 52 Q4 52 6 38 Q8 26 24 28 Q26 10 46 12 Q60 2 74 14 Q94 8 98 28 Q116 30 112 44 Q110 52 96 52Z" fill="var(--hd-line)"/><path d="M46 36 Q50 32 54 36M64 36 Q68 32 72 36" stroke="var(--hd-ink)" stroke-width="2" fill="none" stroke-linecap="round"/><ellipse cx="44" cy="42" rx="4" ry="2.4" fill="#f6c1b5"/><ellipse cx="74" cy="42" rx="4" ry="2.4" fill="#f6c1b5"/></svg>
+      <svg class="birds" viewBox="0 0 60 24"><path d="M4 12 Q9 7 13 12 Q17 7 22 12M34 7 Q38 3 41 7 Q44 3 48 7" stroke="var(--hd-ink)" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".45"/></svg>
+    </div>
+    <svg class="ridges" viewBox="0 0 1200 220" preserveAspectRatio="xMidYMax slice" aria-hidden="true">
+      <defs><filter id="mist" x="-10%" y="-50%" width="120%" height="200%"><feGaussianBlur stdDeviation="9"/></filter></defs>
+      <path d="M0 220 V128 C80 120 120 74 200 74 C270 74 300 116 360 114 C420 112 470 60 560 58 C650 56 690 110 760 108 C820 106 870 68 950 66 C1030 64 1080 106 1200 102 V220Z" fill="var(--hd-far)"/>
+      <path d="M0 220 V160 C90 150 150 114 230 114 C300 114 340 146 410 144 C480 142 560 74 640 72 C720 70 790 140 870 140 C940 140 990 118 1060 118 C1120 118 1170 132 1200 136 V220Z" fill="var(--hd-mid)"/>
+      <path d="M602 88 C616 78 630 72 640 72 C652 72 666 78 680 88 C672 86 664 93 655 89 C648 96 636 96 630 89 C620 93 610 88 602 88Z" fill="var(--hd-snow)"/>
+      <g class="mtnFace"><circle cx="628" cy="106" r="2.6" fill="var(--hd-ink)"/><circle cx="652" cy="106" r="2.6" fill="var(--hd-ink)"/><path d="M635 112 Q640 116 645 112" stroke="var(--hd-ink)" stroke-width="1.8" fill="none" stroke-linecap="round"/><ellipse cx="618" cy="113" rx="6" ry="3" fill="#ef9a86" opacity=".55"/><ellipse cx="662" cy="113" rx="6" ry="3" fill="#ef9a86" opacity=".55"/></g>
+      <path d="M206 120 C214 116 222 114 230 114 C240 114 248 116 256 121 C250 120 245 125 238 122 C232 126 224 126 220 122 C214 124 210 122 206 120Z" fill="var(--hd-snow)" opacity=".9"/>
+      <ellipse cx="320" cy="152" rx="280" ry="13" fill="var(--hd-snow)" opacity=".5" filter="url(#mist)"/>
+      <ellipse cx="880" cy="150" rx="300" ry="12" fill="var(--hd-snow)" opacity=".45" filter="url(#mist)"/>
+      <path d="M0 220 V180 C150 152 280 188 420 172 C560 156 700 184 840 170 C980 156 1100 176 1200 168 V220Z" fill="var(--hd-near)"/>
+      <g id="pines"></g>
+      <g transform="translate(930 138)"><path d="M0 26 V12 L14 0 L28 12 V26Z" fill="var(--hd-cabin)"/><path d="M-3 13 L14 -2 L31 13" stroke="#6b4e3d" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/><rect x="9" y="12" width="8" height="7" rx="1.5" fill="var(--hd-win)"/><circle cx="13" cy="15" r="12" fill="var(--hd-win)" opacity=".18"/><path d="M21 -2 V-9 H25 V3" fill="var(--hd-cabin)"/><path d="M23 -12 q4 -5 0 -10 q-4 -5 1 -10" stroke="var(--hd-snow)" stroke-width="2" fill="none" opacity=".8" stroke-linecap="round"/></g>
+      <path d="M0 220 V198 Q200 182 420 196 T820 192 T1200 194 V220Z" fill="var(--hd-ground)"/>
+    </svg>
+    <div class="headRow">
+      <div class="bearBox" id="bearTop"></div>
+      <div style="min-width:0">
+        <div class="eyebrow">台灣百岳<span class="en"> · TAIWAN 100 PEAKS</span></div>
+        <h1><span class="who" id="bookName">我的</span><span class="ttl">百岳登頂簿<span class="seal" aria-hidden="true">百岳</span></span></h1>
+        <div class="nameRow">
+          <button class="mark" id="nameBtn" hidden>✎ 設定名字</button>
+          <form id="nameForm" hidden><input type="text" id="nameInput" maxlength="20" placeholder="例如：小美、阿山" aria-label="你的名字"><button class="mark save" type="submit">儲存</button><button class="mark del" type="button" id="nameCancel">取消</button></form>
+          <button class="mark" id="back" hidden>← 回到我的登頂簿</button>
+        </div>
+      </div>
+    </div>
+    <div class="sync" id="sync">載入中…</div>
+  </header>
+
+  <nav class="tabs" aria-label="分頁">
+    <div class="seg" id="tabs">
+      <button data-tab="home" aria-pressed="true">總覽</button>
+      <button data-tab="map" aria-pressed="false">地圖</button>
+      <button data-tab="peaks" aria-pressed="false">百岳</button>
+      <button data-tab="badges" aria-pressed="false">徽章</button>
+      <button data-tab="log" aria-pressed="false">紀錄</button>
+    </div>
+  </nav>
+
+  <!-- 總覽 -->
+  <section class="view" id="v-home">
+    <div class="hero">
+      <div>
+        <div class="eyebrow">已完登</div>
+        <div class="count"><b id="cnt" class="num">0</b><span>/ 100 座</span></div>
+        <div class="bar"><i id="bar"></i></div>
+        <div class="stats">
+          <div class="stat"><div class="k">完成度</div><div class="v num" id="pct">0%</div></div>
+          <div class="stat"><div class="k">累積海拔</div><div class="v num" id="sum">0 m</div></div>
+          <div class="stat"><div class="k">徽章</div><div class="v num" id="bcount">0</div></div>
+        </div>
+        <div class="say" id="say"></div>
+      </div>
+      <div>
+        <div class="grid" id="grid" aria-label="百岳小山格，依海拔排列"></div>
+        <div class="legend">一座小山代表一座百岳，依海拔由高到低排。點一下看詳細。</div>
+      </div>
+    </div>
+    <div id="friendsSec" hidden>
+      <h2 style="margin-bottom:12px">山友們</h2>
+      <div class="regions" id="friends"></div>
+    </div>
+    <div id="acctSec">
+      <h2 style="margin-bottom:12px">帳號與同步</h2>
+      <div class="acctCard" id="account"></div>
+    </div>
+  </section>
+
+  <!-- 地圖 -->
+  <section class="view" id="v-map" hidden>
+    <div class="mapBox">
+      <div class="mapWrap"><svg id="map" viewBox="0 0 192 350" role="group" aria-label="台灣百岳地圖"></svg></div>
+      <div class="mapSide">
+        <h2>百岳地圖</h2>
+        <div class="hint">點區域可以放大，點山頭看詳細。橘色小山是已經爬過的。位置為大約位置。</div>
+        <div class="mapTools"><button class="mark" id="zoomAll">看全島</button></div>
+        <div class="regions" id="mapRegions"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 百岳 -->
+  <section class="view" id="v-peaks" hidden>
+    <div class="tools">
+      <input type="search" id="q" placeholder="搜尋山名，例如：奇萊">
+      <div class="seg" id="filter">
+        <button data-f="all" aria-pressed="true">全部</button>
+        <button data-f="todo" aria-pressed="false">還沒爬</button>
+        <button data-f="done" aria-pressed="false">已完登</button>
+      </div>
+    </div>
+    <div class="acc" id="acc"></div>
+    <p class="note">排名依常見百岳清單的海拔排序；各單位的測量數字可能差幾公尺。區域是方便瀏覽的大致分區。</p>
+  </section>
+
+  <!-- 徽章 -->
+  <section class="view" id="v-badges" hidden>
+    <h2>徽章收集冊</h2>
+    <div class="badges" id="badges"></div>
+  </section>
+
+  <!-- 紀錄 -->
+  <section class="view" id="v-log" hidden>
+    <h2>登頂紀錄</h2>
+    <div class="log" id="log"></div>
+  </section>
+</div>
+
+<div class="scrim" id="scrim" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"></div></div>
+<div class="party" id="party" hidden></div>
+<canvas id="petals" hidden></canvas>
+
+
+<script src="config.js"></script>
+<script src="vendor/supabase-2.117.3.js"></script>
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
