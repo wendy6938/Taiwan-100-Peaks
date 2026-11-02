@@ -11,10 +11,11 @@ const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 // ---------- state ----------
 let rec = {}, mine = {}, myNick = "", myId = null, viewId = null;
 let others = {}, nicks = {}, names = {}, cheers = {}, myCheers = {};
-let canEdit = false, signedIn = false, userCap = null;
+let canEdit = false, signedIn = false, userCap = null, showAllFriends = false;
 let tab = "home", filt = "all", q = "", openRegs = new Set(), mapReg = null, sheetPeak = null, editing = false;
 let save = async()=>{}, saveCheers = async()=>{};
-const isMine = ()=> !viewId || viewId===myId;
+const ME = ()=> myId || "__me";
+const isMine = ()=> !viewId || viewId===myId || viewId==="__me";
 const bookOwner = ()=> isMine() ? myId : viewId;
 
 // ---------- art ----------
@@ -67,7 +68,7 @@ function cheersFor(target, peak){
 }
 
 // ---------- labels ----------
-const label = id=> id===myId ? (myNick||"我") : (nicks[id]||names[id]||"山友");
+const label = id=> (id===myId||id==="__me") ? (myNick||"我") : (nicks[id]||names[id]||"山友");
 
 // ---------- render ----------
 function render(){
@@ -107,12 +108,15 @@ function renderFriends(){
   const sec=$("friendsSec");
   if(!signedIn){ sec.hidden=false; $("friends").innerHTML=`<div class="note">這個 app 還沒連上雲端，紀錄只存在這台裝置，山友看不到。</div>`; return; }
   const ids = Object.keys(others).filter(id=>id!==myId && (Object.keys(others[id]).length || nicks[id]));
+  const meId = ME();
   sec.hidden=false;
-  const list=[{id:myId,r:mine}].concat(ids.map(id=>({id,r:others[id]}))).map(x=>({...x,n:Object.keys(x.r).length})).sort((a,b)=>b.n-a.n);
+  let list=[{id:meId,r:mine}].concat(ids.map(id=>({id,r:others[id]}))).map(x=>({...x,n:Object.keys(x.r).length})).sort((a,b)=>b.n-a.n);
+  const total=list.length; if(!showAllFriends && total>6){ const meRow=list.find(x=>x.id===meId); list=list.slice(0,6); if(!list.includes(meRow)) list[5]=meRow; }
   $("friends").innerHTML = list.map((x,i)=>`<button class="reg friend" data-u="${esc(x.id)}" aria-pressed="${bookOwner()===x.id}">
-    <div class="top"><span>${i<3&&x.n?`<span class="rankDot">${i+1}</span>`:""}${esc(label(x.id))}${x.id===myId&&myNick?"（我）":""}</span><span class="num">${x.n}/100</span></div>
+    <div class="top"><span>${i<3&&x.n?`<span class="rankDot">${i+1}</span>`:""}${esc(label(x.id))}${x.id===meId&&myNick?"（我）":""}</span><span class="num">${x.n}/100</span></div>
     <div class="bar"><i style="width:${x.n}%"></i></div></button>`).join("")
-    + (ids.length?"":`<div class="note" style="align-self:center">把網址傳給山友，他們打開就能開始記錄（不用註冊），會出現在這裡。</div>`);
+    + (total>6?`<button class="mark moreBtn" id="moreFriends">${showAllFriends?"收起":"看全部 "+total+" 位山友"}</button>`:"")
+    + (ids.length?"":`<div class="note" style="grid-column:1/-1">把網址傳給山友，他們打開就能開始記錄（不用註冊），會出現在這裡。</div>`);
 }
 
 // ---------- map ----------
@@ -256,7 +260,8 @@ document.addEventListener("click", e=>{
   if(t.dataset.mapreg){ mapReg = mapReg===t.dataset.mapreg?null:t.dataset.mapreg; renderMap(); animateVB(); return; }
   if(t.dataset.grp){ const r=t.dataset.grp; openRegs.has(r)?openRegs.delete(r):openRegs.add(r); renderAcc(); return; }
   if(t.dataset.f){ filt=t.dataset.f; for(const b of document.querySelectorAll("#filter button")) b.setAttribute("aria-pressed",b.dataset.f===filt); renderAcc(); return; }
-  if(t.dataset.u){ viewId = t.dataset.u===myId?null:t.dataset.u; render(); window.scrollTo({top:0,behavior:"smooth"}); return; }
+  if(t.id==="moreFriends"){ showAllFriends=!showAllFriends; renderFriends(); return; }
+  if(t.dataset.u){ viewId = (t.dataset.u===myId||t.dataset.u==="__me")?null:t.dataset.u; render(); window.scrollTo({top:0,behavior:"smooth"}); return; }
   if(t.id==="back"){ viewId=null; render(); }
 });
 $("q").addEventListener("input",e=>{ q=e.target.value.trim(); renderAcc(); });
@@ -284,10 +289,10 @@ let sb=null, account=null, loginEmail="";   // account: {email, anon}
 function renderAccount(){
   const box=$("account"); if(!box) return;
   if(!sb){ box.innerHTML=`<div class="note">這個 app 還沒連上雲端資料庫，紀錄只存在這台裝置。</div>`; return; }
-  if(!account){ box.innerHTML=""; return; }
-  box.innerHTML = account.anon ? `
-    <div class="acctTxt"><b>免註冊使用中</b><br>紀錄已同步到雲端，但只認得這台裝置。綁定 Email 之後，換手機或清除瀏覽器資料也找得回來。</div>
-    <form class="acctForm" id="linkForm"><input type="email" id="linkEmail" required placeholder="you@example.com" aria-label="Email"><button class="mark" type="submit">綁定 Email</button></form>
+  box.innerHTML = (!account || account.anon) ? `
+    ${account ? `<div class="acctTxt"><b>免註冊使用中</b><br>紀錄已同步到雲端，但只認得這台裝置。綁定 Email 之後，換手機或電腦也找得回來。</div>
+    <form class="acctForm" id="linkForm"><input type="email" id="linkEmail" required placeholder="you@example.com" aria-label="Email"><button class="mark" type="submit">綁定 Email</button></form>`
+    : `<div class="acctTxt">不用註冊，取名字或標記第一座山時，就會自動建立你的登頂簿。</div>`}
     <details class="acctMore"${loginEmail?" open":""}><summary>已經綁定過 Email？用 Email 登入找回紀錄</summary>
       ${!loginEmail ? `<form class="acctForm" id="loginForm"><input type="email" id="loginEmail" required placeholder="輸入綁定過的 Email" aria-label="Email"><button class="mark" type="submit">寄登入碼</button></form>`
       : `<div class="hint">登入碼已寄到 ${esc(loginEmail)}，請打開信，把信裡的數字登入碼輸入在下面。</div>
@@ -316,7 +321,7 @@ document.addEventListener("submit", async e=>{
     const {error}=await sb.auth.verifyOtp({email:loginEmail,token,type:"email"});
     if(error){ if(wasAnon && oldId && (Object.keys(mine).length||myNick)) await sb.from("profiles").upsert({id:oldId,nick:myNick,peaks:mine,updated_at:new Date().toISOString()});
       $("acctMsg").textContent="登入碼不對或已過期，請再試一次或重寄。"; return; }
-    $("acctMsg").textContent="登入成功，正在載入你的紀錄…"; }
+    $("acctMsg").textContent="登入成功，正在載入你的紀錄…"; setTimeout(()=>location.reload(),300); }
 });
 document.addEventListener("click", async e=>{ if(e.target.id==="loginRestart"){ loginEmail=""; renderAccount(); return; } if(e.target.id==="logoutBtn" && sb){ await sb.auth.signOut(); try{ localStorage.removeItem(LS); localStorage.removeItem(LS+"-nick"); }catch(_){} location.reload(); } });
 
@@ -326,20 +331,30 @@ document.addEventListener("click", async e=>{ if(e.target.id==="loginRestart"){ 
   try{
     sb=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseAnonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
     let {data:{session}}=await sb.auth.getSession();
-    if(!session){ const r=await sb.auth.signInAnonymously(); if(r.error) return localMode("雲端登入失敗，先存在這台裝置"); session=r.data.session; }
-    const u=session.user; myId=u.id; signedIn=true; account={email:u.email, anon:!!u.is_anonymous};
-    sb.auth.onAuthStateChange((ev,s)=>{ if(s?.user && s.user.id!==myId) location.reload(); else if(s?.user){ account={email:s.user.email,anon:!!s.user.is_anonymous}; renderAccount(); } });
+    signedIn=true;
+    if(session){ const u=session.user; myId=u.id; account={email:u.email, anon:!!u.is_anonymous}; }
+    sb.auth.onAuthStateChange((ev,s)=>{ if(s?.user && myId && s.user.id!==myId) location.reload(); else if(s?.user){ account={email:s.user.email,anon:!!s.user.is_anonymous}; renderAccount(); } });
     renderAccount();
+    // create the (anonymous) user only when this person first saves something
+    let ensuring=null;
+    const ensureUser=async()=>{
+      if(myId) return true;
+      ensuring ||= sb.auth.signInAnonymously().then(r=>{ if(r.error){ setSync("雲端登入失敗，先存在這台裝置"); return false; }
+        myId=r.data.user.id; account={email:null,anon:true}; renderAccount(); return true; });
+      return ensuring;
+    };
 
     let busy=false, pending=false, first=true;
     const push=async()=>{
       if(busy){ pending=true; return; } busy=true;
+      if(!await ensureUser()){ busy=false; return; }
       const {error}=await sb.from("profiles").upsert({id:myId,nick:myNick,peaks:mine,updated_at:new Date().toISOString()});
       setSync(error?"同步失敗，已先存在這台裝置":"已同步・山友看得到你的進度");
       busy=false; if(pending){ pending=false; push(); }
     };
     save=async()=>{ lsWrite(); push(); };
     saveCheers=async()=>{
+      if(!await ensureUser()) return;
       // write only the keys that changed since last sync
       for(const k of new Set([...Object.keys(syncedCheers),...Object.keys(myCheers)])){
         const a=syncedCheers[k], b=myCheers[k]; if(JSON.stringify(a)===JSON.stringify(b)) continue;
@@ -362,7 +377,7 @@ document.addEventListener("click", async e=>{ if(e.target.id==="loginRestart"){ 
       others=map; nicks=nk; cheers=all;
       if(first){
         first=false;
-        const had=map[myId];
+        const had=myId?map[myId]:undefined;
         mine=Object.assign({},mine,had||{});
         const localNick=myNick; if(nk[myId]) myNick=nk[myId]; lsWrite();
         if(had ? (Object.keys(mine).length!==Object.keys(had).length || (!nk[myId]&&localNick)) : (Object.keys(mine).length||myNick)) await push();

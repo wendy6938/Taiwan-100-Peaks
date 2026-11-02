@@ -263,3 +263,11 @@ h1 .seal{font-size:13px;line-height:1.05;letter-spacing:0;writing-mode:vertical-
 .acctForm{display:flex;flex-wrap:wrap;gap:8px}
 .acctForm input{flex:1 1 200px;min-width:0;font:inherit;font-size:15px;padding:8px 12px;border:2px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink)}
 .acctMore summary{cursor:pointer;font-size:13px;color:var(--muted);margin-bottom:8px}
+
+/* ---- compact friends list ---- */
+#friends{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+#friends .reg{padding:9px 12px;border-radius:14px}
+#friends .reg .bar{height:6px;margin-top:6px}
+#friends .top{font-size:14px}
+#friends .moreBtn{grid-column:1/-1;justify-self:center}
+@media (max-width:520px){#friends{grid-template-columns:repeat(2,minmax(0,1fr))}}
