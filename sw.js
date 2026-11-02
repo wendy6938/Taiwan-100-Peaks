@@ -1,5 +1,5 @@
 // 離線快取：網站本身的檔案先從快取拿、背景更新；雲端資料（Supabase）一律走網路。
-const VERSION = "baiyue-v1";
+const VERSION = "baiyue-v2";
 const SHELL = ["./", "index.html", "style.css", "app.js", "data.js", "config.js",
   "vendor/supabase-2.117.3.js", "manifest.webmanifest",
   "icons/icon-192.png", "icons/icon-512.png", "icons/apple-touch-icon.png"];
