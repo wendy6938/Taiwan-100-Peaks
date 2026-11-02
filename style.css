@@ -273,3 +273,5 @@ h1 .seal{font-size:13px;line-height:1.05;letter-spacing:0;writing-mode:vertical-
 @media (max-width:520px){#friends{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .acctCol{flex-direction:column;align-items:stretch}
 .acctCol input,.acctCol button{width:100%;flex:none}
+.sheet form#cheerForm{flex-direction:row;flex-wrap:wrap;align-items:center}
+.sheet form#cheerForm input{flex:1 1 160px;width:auto}
